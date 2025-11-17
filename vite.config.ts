@@ -24,10 +24,12 @@ export default defineConfig({
         content: resolve(__dirname, 'src/content.ts'),
       },
       output: {
+        format: 'iife', // Chrome Extension 需要 IIFE 格式，不支持 ES modules
         entryFileNames: '[name].js',
         chunkFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
         // 避免代码分割，确保所有代码打包到一个文件中
+        inlineDynamicImports: true, // 内联所有动态导入
         manualChunks: undefined,
       },
     },
