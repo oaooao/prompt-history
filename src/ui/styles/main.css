@@ -32,18 +32,6 @@ main {
 
 .ph-nav-container {
   position: relative;
-  padding-left: 16px;
-}
-
-/* 左侧竖线 - 连续贯穿标题和链接 */
-.ph-nav-container::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: #e5e5e5;
 }
 
 /* ============================================
@@ -103,9 +91,22 @@ main {
    ============================================ */
 
 .ph-links {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0;
+  padding-left: 16px;
+}
+
+/* 左侧竖线 - 只覆盖链接列表区域 */
+.ph-links::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e5e5e5;
 }
 
 /* ============================================
@@ -185,11 +186,11 @@ main {
   opacity: 1;
 }
 
-/* 链接左侧指示器（蓝色粗线） */
+/* 链接左侧指示器（蓝色粗线） - 覆盖分隔线 */
 .ph-link-item::before {
   content: '';
   position: absolute;
-  left: -17px;
+  left: -16px;
   top: 6px;
   bottom: 6px;
   width: 3px;
@@ -214,6 +215,11 @@ main {
 
 .ph-link-item.active::before {
   opacity: 1;
+}
+
+/* 激活状态时序号也高亮 */
+.ph-link-item.active .prompt-index {
+  color: #0070f3;
 }
 
 /* 滚动条 - 隐藏 */
@@ -258,7 +264,8 @@ main {
    ============================================ */
 
 @media (prefers-color-scheme: dark) {
-  .ph-nav-container::before {
+  /* 左侧竖线暗色模式 */
+  .ph-links::before {
     background: #333;
   }
 
@@ -304,5 +311,10 @@ main {
 
   .prompt-index {
     color: #666;
+  }
+
+  /* 激活状态时序号也高亮（暗色模式） */
+  .ph-link-item.active .prompt-index {
+    color: #3b9eff;
   }
 }
