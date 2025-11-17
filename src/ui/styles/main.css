@@ -1,0 +1,308 @@
+/* Prompt History - 多平台支持版本 */
+/* Leo Query TOC 风格 */
+
+/* ============================================
+   调整主内容区，为 TOC 腾出空间
+   ============================================ */
+
+main {
+  margin-right: 260px !important;
+}
+
+/* ============================================
+   TOC 侧边栏
+   ============================================ */
+
+#prompt-history-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  padding: 80px 20px 24px 20px;
+  background: transparent;
+  z-index: 100;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ============================================
+   导航容器（包含标题和链接列表）
+   ============================================ */
+
+.ph-nav-container {
+  position: relative;
+  padding-left: 16px;
+}
+
+/* 左侧竖线 - 连续贯穿标题和链接 */
+.ph-nav-container::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e5e5e5;
+}
+
+/* ============================================
+   标题区域 - 包含标题和批量复制按钮
+   ============================================ */
+
+.ph-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.ph-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin: 0;
+  padding: 0;
+  letter-spacing: 0.025em;
+  flex: 1;
+}
+
+/* 批量复制按钮 */
+.ph-copy-all-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.ph-copy-all-button:hover {
+  color: #0070f3;
+  background: rgba(0, 112, 243, 0.05);
+}
+
+.ph-copy-all-button:active {
+  transform: scale(0.95);
+}
+
+.ph-copy-all-button.copied {
+  color: #10b981;
+}
+
+/* ============================================
+   链接列表容器
+   ============================================ */
+
+.ph-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ============================================
+   链接项
+   ============================================ */
+
+.ph-link-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+  text-decoration: none;
+  padding: 6px 0;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Prompt 内容容器 */
+.prompt-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.prompt-index {
+  color: #999;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.prompt-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 单个复制按钮 */
+.ph-copy-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-radius: 3px;
+  opacity: 0;
+  flex-shrink: 0;
+}
+
+.ph-link-item:hover .ph-copy-button {
+  opacity: 1;
+}
+
+.ph-copy-button:hover {
+  color: #0070f3;
+  background: rgba(0, 112, 243, 0.08);
+}
+
+.ph-copy-button:active {
+  transform: scale(0.9);
+}
+
+.ph-copy-button.copied {
+  color: #10b981;
+  opacity: 1;
+}
+
+/* 链接左侧指示器（蓝色粗线） */
+.ph-link-item::before {
+  content: '';
+  position: absolute;
+  left: -17px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: #0070f3;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.ph-link-item:hover {
+  color: #0070f3;
+}
+
+.ph-link-item:hover::before {
+  opacity: 0.3;
+}
+
+.ph-link-item.active {
+  color: #0070f3;
+  font-weight: 500;
+}
+
+.ph-link-item.active::before {
+  opacity: 1;
+}
+
+/* 滚动条 - 隐藏 */
+#prompt-history-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 空状态 */
+.empty-state {
+  font-size: 13px;
+  color: #999;
+  line-height: 1.6;
+  padding: 6px 0;
+}
+
+/* ============================================
+   图标样式
+   ============================================ */
+
+.ph-copy-button svg,
+.ph-copy-all-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ============================================
+   响应式 - 小屏隐藏
+   ============================================ */
+
+@media (max-width: 1280px) {
+  #prompt-history-sidebar {
+    display: none;
+  }
+
+  main {
+    margin-right: 0 !important;
+  }
+}
+
+/* ============================================
+   暗色模式
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .ph-nav-container::before {
+    background: #333;
+  }
+
+  .ph-header h3 {
+    color: #999;
+  }
+
+  .ph-link-item {
+    color: #888;
+  }
+
+  .ph-link-item:hover {
+    color: #3b9eff;
+  }
+
+  .ph-link-item.active {
+    color: #3b9eff;
+  }
+
+  .ph-link-item::before {
+    background: #3b9eff;
+  }
+
+  .empty-state {
+    color: #666;
+  }
+
+  .ph-copy-all-button,
+  .ph-copy-button {
+    color: #666;
+  }
+
+  .ph-copy-all-button:hover,
+  .ph-copy-button:hover {
+    color: #3b9eff;
+    background: rgba(59, 158, 255, 0.1);
+  }
+
+  .ph-copy-all-button.copied,
+  .ph-copy-button.copied {
+    color: #10b981;
+  }
+
+  .prompt-index {
+    color: #666;
+  }
+}

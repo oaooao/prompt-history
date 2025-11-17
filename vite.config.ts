@@ -46,7 +46,7 @@ export default defineConfig({
           dest: 'icons',
         },
         {
-          src: 'src/ui/styles/*.css',
+          src: 'src/ui/styles/main.css',
           dest: '.',
         },
       ],

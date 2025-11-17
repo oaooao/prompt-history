@@ -174,7 +174,7 @@ export const API = {
 /**
  * 调试模式（开发环境启用）
  */
-export const DEBUG = process.env.NODE_ENV === 'development';
+export const DEBUG = process.env['NODE_ENV'] === 'development';
 
 /**
  * 版本号
