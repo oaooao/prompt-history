@@ -1,0 +1,8 @@
+dist
+node_modules
+bun.lockb
+*.log
+.vscode
+.idea
+*.min.js
+*.min.css

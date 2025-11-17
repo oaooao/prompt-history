@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(eza --tree:*)",
+      "Bash(eza:*)",
+      "Bash(tokei:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
