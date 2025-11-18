@@ -11,18 +11,21 @@ import { copyToClipboard, copyMultiple } from '@/utils/clipboard';
 import { createElement, scrollToElement } from '@/utils/dom';
 import { debounce } from '@/utils/debounce';
 import { Logger } from '@/utils/logger';
-import { SELECTORS, CONFIG, ICONS } from '@/config/constants';
+import { SELECTORS, CONFIG, ICONS, STORAGE_KEYS } from '@/config/constants';
 
 export class Sidebar {
   private container: HTMLElement | null = null;
   private promptListElement: HTMLElement | null = null;
+  private compactCard: HTMLElement | null = null;
   private eventBus: EventBus;
   private store: PromptStore;
   private currentActiveId: string | null = null;
+  private isCollapsed: boolean = false;
 
   constructor(store: PromptStore) {
     this.store = store;
     this.eventBus = EventBus.getInstance();
+    this.isCollapsed = this.loadCollapsedState();
     this.setupEventListeners();
   }
 
@@ -35,13 +38,32 @@ export class Sidebar {
 
     // 创建容器
     this.container = this.createContainer();
+
+    // 应用初始折叠状态
+    if (this.isCollapsed) {
+      this.container.classList.add(SELECTORS.COLLAPSED);
+    }
+
     document.body.appendChild(this.container);
+
+    // 创建右上角小卡片
+    this.compactCard = this.createCompactCard();
+
+    // 如果初始状态是折叠的，显示小卡片
+    if (this.isCollapsed) {
+      this.compactCard.classList.add('visible');
+    }
+
+    document.body.appendChild(this.compactCard);
 
     // 渲染内容
     this.renderContent();
 
     // 设置滚动监听
     this.setupScrollListener();
+
+    // 更新主内容区 margin
+    this.updateMainMargin();
 
     Logger.info('Sidebar', 'Sidebar rendered');
   }
@@ -57,6 +79,47 @@ export class Sidebar {
   }
 
   /**
+   * 创建右上角小卡片
+   */
+  private createCompactCard(): HTMLElement {
+    const card = createElement('div', {
+      id: SELECTORS.COMPACT_CARD,
+      className: SELECTORS.COMPACT_CARD,
+    });
+
+    const prompts = this.store.getFiltered();
+
+    card.innerHTML = `
+      <span class="ph-compact-badge">${prompts.length}</span>
+      <span class="ph-compact-label">Prompts</span>
+    `;
+
+    // 点击小卡片时展开侧边栏
+    card.addEventListener('click', () => {
+      if (this.isCollapsed) {
+        this.toggleSidebar();
+      }
+    });
+
+    return card;
+  }
+
+  /**
+   * 更新右上角小卡片计数
+   */
+  private updateCompactCard(): void {
+    if (!this.compactCard) {
+      return;
+    }
+
+    const prompts = this.store.getFiltered();
+    const badge = this.compactCard.querySelector('.ph-compact-badge');
+    if (badge) {
+      badge.textContent = prompts.length.toString();
+    }
+  }
+
+  /**
    * 渲染内容
    */
   private renderContent(): void {
@@ -68,12 +131,17 @@ export class Sidebar {
 
     this.container.innerHTML = `
       <div class="${SELECTORS.HEADER}">
-        <h3>Prompts (${prompts.length})</h3>
+        <h3>Prompts</h3>
         ${
           prompts.length > 0
-            ? `<button class="${SELECTORS.COPY_ALL_BUTTON}" title="复制所有">
-                 ${ICONS.COPY}
-               </button>`
+            ? `<div class="${SELECTORS.HEADER_ACTIONS}">
+                 <button class="${SELECTORS.TOGGLE_BUTTON}" title="展开/收起">
+                   <span class="ph-toggle-icon">${ICONS.CHEVRON}</span>
+                 </button>
+                 <button class="${SELECTORS.COPY_ALL_BUTTON}" title="复制所有">
+                   ${ICONS.COPY}
+                 </button>
+               </div>`
             : ''
         }
       </div>
@@ -89,6 +157,9 @@ export class Sidebar {
 
     // 绑定事件
     this.bindEvents();
+
+    // 更新右上角小卡片
+    this.updateCompactCard();
   }
 
   /**
@@ -107,7 +178,7 @@ export class Sidebar {
     }
 
     const listHTML = prompts
-      .map((prompt, index) => this.renderPromptItem(prompt, index))
+      .map((prompt) => this.renderPromptItem(prompt))
       .join('');
 
     this.promptListElement.innerHTML = listHTML;
@@ -116,7 +187,7 @@ export class Sidebar {
   /**
    * 渲染单个 Prompt 项
    */
-  private renderPromptItem(prompt: Prompt, index: number): string {
+  private renderPromptItem(prompt: Prompt): string {
     const preview =
       prompt.content.length > CONFIG.ui.previewLength
         ? prompt.content.substring(0, CONFIG.ui.previewLength) + '...'
@@ -124,10 +195,7 @@ export class Sidebar {
 
     return `
       <div class="${SELECTORS.LINK_ITEM}" data-id="${prompt.id}">
-        <div class="prompt-content">
-          <span class="prompt-index">${index + 1}.</span>
-          <span class="prompt-text">${this.escapeHtml(preview)}</span>
-        </div>
+        <span class="prompt-text">${this.escapeHtml(preview)}</span>
         <button class="${SELECTORS.COPY_BUTTON}" data-id="${prompt.id}" title="复制">
           ${ICONS.COPY}
         </button>
@@ -141,6 +209,14 @@ export class Sidebar {
   private bindEvents(): void {
     if (!this.container) {
       return;
+    }
+
+    // 展开/收起按钮
+    const toggleBtn = this.container.querySelector(
+      `.${SELECTORS.TOGGLE_BUTTON}`
+    );
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => this.toggleSidebar());
     }
 
     // 复制所有按钮
@@ -338,6 +414,64 @@ export class Sidebar {
   }
 
   /**
+   * 从 localStorage 加载折叠状态
+   */
+  private loadCollapsedState(): boolean {
+    const saved = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
+    // 默认在小屏幕上折叠
+    return saved !== null ? saved === 'true' : window.innerWidth < 1440;
+  }
+
+  /**
+   * 保存折叠状态到 localStorage
+   */
+  private saveCollapsedState(collapsed: boolean): void {
+    localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, collapsed.toString());
+  }
+
+  /**
+   * 切换侧边栏展开/收起
+   */
+  private toggleSidebar(): void {
+    this.isCollapsed = !this.isCollapsed;
+    this.saveCollapsedState(this.isCollapsed);
+
+    if (!this.container || !this.compactCard) {
+      return;
+    }
+
+    if (this.isCollapsed) {
+      this.container.classList.add(SELECTORS.COLLAPSED);
+      // 延迟显示小卡片（等待动画完成）
+      setTimeout(() => {
+        this.compactCard?.classList.add('visible');
+      }, 250);
+    } else {
+      this.container.classList.remove(SELECTORS.COLLAPSED);
+      this.compactCard.classList.remove('visible');
+    }
+
+    this.updateMainMargin();
+    Logger.debug('Sidebar', `Sidebar ${this.isCollapsed ? 'collapsed' : 'expanded'}`);
+  }
+
+  /**
+   * 更新主内容区 margin
+   */
+  private updateMainMargin(): void {
+    const main = document.querySelector('main');
+    if (!main) {
+      return;
+    }
+
+    if (this.isCollapsed) {
+      main.style.marginRight = '68px'; // 48px + 20px
+    } else {
+      main.style.marginRight = '260px'; // 240px + 20px
+    }
+  }
+
+  /**
    * 销毁侧边栏
    */
   destroy(): void {
@@ -346,6 +480,10 @@ export class Sidebar {
       this.container = null;
       this.promptListElement = null;
       Logger.info('Sidebar', 'Sidebar destroyed');
+    }
+    if (this.compactCard) {
+      this.compactCard.remove();
+      this.compactCard = null;
     }
   }
 }

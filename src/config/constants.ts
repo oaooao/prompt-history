@@ -68,6 +68,14 @@ export const SELECTORS = {
   COPY_BUTTON: 'ph-copy-button',
   /** 复制所有按钮 class */
   COPY_ALL_BUTTON: 'ph-copy-all-button',
+  /** 展开/收起按钮 class */
+  TOGGLE_BUTTON: 'ph-toggle-button',
+  /** 头部按钮组 class */
+  HEADER_ACTIONS: 'ph-header-actions',
+  /** 右上角小卡片 ID */
+  COMPACT_CARD: 'ph-compact-card',
+  /** 折叠状态 class */
+  COLLAPSED: 'collapsed',
 } as const;
 
 /**
@@ -117,6 +125,10 @@ export const ICONS = {
     <line x1="18" y1="6" x2="6" y2="18"></line>
     <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>`,
+  /** 箭头图标（展开/收起） */
+  CHEVRON: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>`,
 } as const;
 
 /**
@@ -157,6 +169,8 @@ export const STORAGE_KEYS = {
   CACHED_PROMPTS: 'prompt-history:cache',
   /** 最后访问的 URL */
   LAST_URL: 'prompt-history:last-url',
+  /** 侧边栏折叠状态 */
+  SIDEBAR_COLLAPSED: 'prompt-history:sidebar-collapsed',
 } as const;
 
 /**
