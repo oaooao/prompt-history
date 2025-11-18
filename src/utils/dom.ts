@@ -100,7 +100,7 @@ export function scrollToElement(
 ): void {
   try {
     element.scrollIntoView(options);
-  } catch (error) {
+  } catch {
     // 降级：使用传统滚动
     element.scrollIntoView();
   }

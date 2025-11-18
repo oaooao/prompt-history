@@ -61,8 +61,15 @@ export class ChatGPTExtractor extends BaseExtractor {
    * 注意：调用方已通过 isUserPrompt() 过滤，此处不再重复检查
    */
   private extractFromArticle(article: HTMLElement): Prompt | null {
-    // 提取文本内容
-    const content = this.extractText(article);
+    // 查找真正的用户消息元素（而不是整个 article 容器）
+    // 优先从消息气泡提取，避免包含 UI 标签（如 <h5>You said:</h5>）
+    const messageElement =
+      article.querySelector('.user-message-bubble-color') ||
+      article.querySelector('[data-message-author-role="user"]') ||
+      article; // fallback 到 article
+
+    // 从消息元素提取文本内容
+    const content = this.extractText(messageElement as HTMLElement);
 
     // 验证内容
     if (!this.isValidContent(content)) {
@@ -76,12 +83,6 @@ export class ChatGPTExtractor extends BaseExtractor {
 
     // 获取时间戳（尝试从 DOM 获取，否则使用当前时间）
     const timestamp = this.extractTimestamp(article) || Date.now();
-
-    // 查找真正的用户消息元素（而不是整个 article 容器）
-    const messageElement =
-      article.querySelector('.user-message-bubble-color') ||
-      article.querySelector('[data-message-author-role="user"]') ||
-      article; // fallback 到 article
 
     // 创建 Prompt 对象
     return this.createPrompt(
@@ -219,18 +220,19 @@ export class ChatGPTExtractor extends BaseExtractor {
         continue;
       }
 
-      const content = this.extractText(article);
+      // 查找真正的用户消息元素（而不是整个 article 容器）
+      // 优先从消息气泡提取，避免包含 UI 标签（如 <h5>You said:</h5>）
+      const messageElement =
+        article.querySelector('.user-message-bubble-color') ||
+        article.querySelector('[data-message-author-role="user"]') ||
+        article; // fallback 到 article
+
+      const content = this.extractText(messageElement as HTMLElement);
       if (!this.isValidContent(content) || this.isDuplicate(content)) {
         continue;
       }
 
       const timestamp = this.extractTimestamp(article) || Date.now();
-
-      // 查找真正的用户消息元素（而不是整个 article 容器）
-      const messageElement =
-        article.querySelector('.user-message-bubble-color') ||
-        article.querySelector('[data-message-author-role="user"]') ||
-        article; // fallback 到 article
 
       const prompt = this.createPrompt(
         content,

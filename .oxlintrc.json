@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "rules": {
+    "typescript/no-explicit-any": "warn",
+    "import/no-duplicates": "error",
+    "no-unused-vars": "error"
+  },
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "webextensions": true
+  }
+}

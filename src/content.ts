@@ -7,7 +7,8 @@ import { PlatformFactory } from '@/platforms/factory';
 import { PlatformDetector } from '@/platforms/base/PlatformDetector';
 import { PromptStore } from '@/core/store/PromptStore';
 import { EventBus } from '@/core/events/EventBus';
-import { Sidebar } from '@/ui/components/Sidebar';
+import Sidebar from '@/ui/components/Sidebar.svelte';
+import { mount, unmount } from 'svelte';
 import { Logger, LogLevel } from '@/utils/logger';
 import { CONFIG, DEBUG, EXTENSION_NAME, VERSION } from '@/config/constants';
 import { IPlatformAdapter } from '@/types/Platform';
@@ -18,14 +19,15 @@ import { IPlatformAdapter } from '@/types/Platform';
 class PromptHistoryApp {
   private adapter: IPlatformAdapter | null = null;
   private store: PromptStore;
-  private sidebar: Sidebar | null = null;
-  // private eventBus: EventBus; // TODO: 将来用于事件订阅
+  private sidebar: any = null; // Svelte 组件实例
+  private sidebarContainer: HTMLElement | null = null;
+  private eventBus: EventBus;
   private extractionInterval: ReturnType<typeof setInterval> | null = null;
   private initialized = false;
 
   constructor() {
     this.store = new PromptStore();
-    // this.eventBus = EventBus.getInstance(); // TODO: 将来用于事件订阅
+    this.eventBus = EventBus.getInstance();
 
     // 配置日志级别
     if (DEBUG) {
@@ -115,13 +117,27 @@ class PromptHistoryApp {
         return;
       }
 
-      // 创建侧边栏
-      if (!this.sidebar) {
-        this.sidebar = new Sidebar(this.store);
+      // 如果已经渲染，则不重复渲染
+      if (this.sidebar) {
+        Logger.warn('App', 'Sidebar already rendered');
+        return;
       }
 
-      this.sidebar.render();
-      Logger.info('App', 'UI rendered');
+      // 创建 Svelte 组件容器
+      this.sidebarContainer = document.createElement('div');
+      this.sidebarContainer.id = 'ph-sidebar-root';
+      document.body.appendChild(this.sidebarContainer);
+
+      // 挂载 Svelte 5 组件（使用 mount API）
+      this.sidebar = mount(Sidebar, {
+        target: this.sidebarContainer,
+        props: {
+          store: this.store,
+          eventBus: this.eventBus,
+        },
+      });
+
+      Logger.info('App', 'UI rendered with Svelte');
     } catch (error) {
       Logger.error('App', 'UI rendering failed', error as Error);
     }
@@ -176,10 +192,16 @@ class PromptHistoryApp {
       this.extractionInterval = null;
     }
 
-    // 销毁 UI
+    // 销毁 Svelte 5 组件
     if (this.sidebar) {
-      this.sidebar.destroy();
+      unmount(this.sidebar);
       this.sidebar = null;
+    }
+
+    // 移除容器
+    if (this.sidebarContainer) {
+      this.sidebarContainer.remove();
+      this.sidebarContainer = null;
     }
 
     // 销毁适配器
