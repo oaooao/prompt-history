@@ -4,7 +4,8 @@
       "Bash(eza --tree:*)",
       "Bash(eza:*)",
       "Bash(tokei:*)",
-      "Bash(git rev-parse:*)"
+      "Bash(git rev-parse:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

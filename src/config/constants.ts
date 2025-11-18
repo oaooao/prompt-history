@@ -125,9 +125,14 @@ export const ICONS = {
     <line x1="18" y1="6" x2="6" y2="18"></line>
     <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>`,
-  /** 箭头图标（展开/收起） */
-  CHEVRON: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  /** 箭头图标（展开/收起） - 双向箭头 */
+  CHEVRON_RIGHT: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="9 18 15 12 9 6"></polyline>
+    <polyline points="15 18 21 12 15 6"></polyline>
+  </svg>`,
+  CHEVRON_LEFT: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 18 9 12 15 6"></polyline>
+    <polyline points="9 18 3 12 9 6"></polyline>
   </svg>`,
 } as const;
 

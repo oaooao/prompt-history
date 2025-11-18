@@ -135,11 +135,12 @@ export class Sidebar {
         ${
           prompts.length > 0
             ? `<div class="${SELECTORS.HEADER_ACTIONS}">
-                 <button class="${SELECTORS.TOGGLE_BUTTON}" title="展开/收起">
-                   <span class="ph-toggle-icon">${ICONS.CHEVRON}</span>
-                 </button>
                  <button class="${SELECTORS.COPY_ALL_BUTTON}" title="复制所有">
                    ${ICONS.COPY}
+                 </button>
+                 <button class="${SELECTORS.TOGGLE_BUTTON}" title="展开/收起">
+                   <span class="ph-toggle-icon ph-toggle-icon-expand">${ICONS.CHEVRON_LEFT}</span>
+                   <span class="ph-toggle-icon ph-toggle-icon-collapse">${ICONS.CHEVRON_RIGHT}</span>
                  </button>
                </div>`
             : ''
