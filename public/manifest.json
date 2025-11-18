@@ -24,7 +24,6 @@
         "https://chat.deepseek.com/*"
       ],
       "js": ["content.js"],
-      "css": ["main.css"],
       "run_at": "document_end"
     }
   ],
