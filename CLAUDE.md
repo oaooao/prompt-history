@@ -250,3 +250,60 @@ window.__promptHistoryApp.store.getPrompts()
 - TypeScript + Vite
 - Chrome Extension Manifest V3
 - 设计模式：Platform Adapter、Factory、Observer、Singleton
+
+## Svelte 5 官方文档参考
+
+> Svelte is a UI framework that uses a compiler to let you write breathtakingly concise components that do minimal work in the browser, using languages you already know — HTML, CSS and JavaScript.
+
+在重构为 Svelte 5 时，请参考以下官方文档以确保代码符合最佳实践：
+
+### 文档集合
+
+- **精简版文档** (推荐优先使用): https://svelte.dev/llms-medium.txt
+  - Svelte 和 SvelteKit 文档的精简版本，移除了示例和非必要内容
+
+- **压缩版文档**: https://svelte.dev/llms-small.txt
+  - 最小化版本，移除了大部分示例和非必要内容
+
+- **完整文档**: https://svelte.dev/llms-full.txt
+  - 完整的 Svelte 和 SvelteKit 文档，包含所有示例和附加内容
+
+### 独立包文档
+
+- **Svelte 核心文档**: https://svelte.dev/docs/svelte/llms.txt
+  - Svelte 框架的开发者文档
+
+- **SvelteKit 文档**: https://svelte.dev/docs/kit/llms.txt
+  - SvelteKit 框架的开发者文档
+
+- **Svelte CLI 文档**: https://svelte.dev/docs/cli/llms.txt
+  - Svelte CLI 工具的开发者文档
+
+- **Svelte MCP 文档**: https://svelte.dev/docs/mcp/llms.txt
+  - Svelte MCP 的开发者文档
+
+### 使用说明
+
+- 精简版和压缩版文档排除了旧版兼容性说明、详细示例和补充信息
+- 完整文档包含官方文档的所有内容
+- 包特定文档仅包含与该包相关的内容
+- 所有内容均从官方文档的同一源自动生成
+
+### 重构指引
+
+在进行 Svelte 5 重构时，请遵循以下原则：
+
+1. **优先使用 Svelte 5 的新特性**
+   - Runes（响应式状态管理的新方式）
+   - Snippets（代替 slots 的新语法）
+   - 改进的类型推导
+
+2. **组件重构优先级**
+   - UI 组件（Sidebar、按钮等）：优先使用 Svelte 组件
+   - 数据管理：可以保留现有 Store 或迁移到 Svelte Store
+   - 事件处理：使用 Svelte 的事件系统
+
+3. **保持向后兼容**
+   - Chrome Extension V3 的 IIFE 格式要求不变
+   - 现有的平台适配器架构保持稳定
+   - 确保 DOM 提取逻辑不受影响
