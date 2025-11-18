@@ -62,6 +62,26 @@ export class PlatformFactory {
           adapter = new DeepSeekAdapter();
           break;
 
+        case PlatformType.QWEN_CN:
+          const { QwenCNAdapter } = await import('./qwen-cn/QwenCNAdapter');
+          adapter = new QwenCNAdapter();
+          break;
+
+        case PlatformType.QWEN_INTL:
+          const { QwenIntlAdapter } = await import('./qwen-intl/QwenIntlAdapter');
+          adapter = new QwenIntlAdapter();
+          break;
+
+        case PlatformType.KIMI:
+          const { KimiAdapter } = await import('./kimi/KimiAdapter');
+          adapter = new KimiAdapter();
+          break;
+
+        case PlatformType.DOUBAO:
+          const { DoubaoAdapter } = await import('./doubao/DoubaoAdapter');
+          adapter = new DoubaoAdapter();
+          break;
+
         case PlatformType.UNKNOWN:
         default:
           throw new Error(`Unsupported platform: ${detectedType}`);

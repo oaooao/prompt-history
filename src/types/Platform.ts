@@ -12,6 +12,10 @@ export enum PlatformType {
   GEMINI = 'gemini',
   CLAUDE = 'claude',
   DEEPSEEK = 'deepseek',
+  QWEN_CN = 'qwen-cn', // 通义千问（中国版）
+  QWEN_INTL = 'qwen-intl', // Qwen（国际版）
+  KIMI = 'kimi', // Kimi（月之暗面）
+  DOUBAO = 'doubao', // 豆包（字节跳动）
   UNKNOWN = 'unknown',
 }
 
@@ -49,6 +53,20 @@ export interface PlatformSelectors {
   textContainer?: string;
   /** 忽略的元素标签 */
   ignoredTags: string[];
+  /** 忽略的 CSS 类名（可选） */
+  ignoredClasses?: string[];
+  /** Gemini: 用户查询元素选择器（可选） */
+  userQueryElement?: string;
+  /** Gemini: 用户查询文本选择器（可选） */
+  userQueryText?: string;
+  /** Gemini: 聊天历史容器选择器（可选） */
+  chatHistory?: string;
+  /** DeepSeek: 用户消息文本容器选择器（可选） */
+  userMessageText?: string;
+  /** DeepSeek: 聊天容器选择器（可选） */
+  chatContainer?: string;
+  /** DeepSeek: 消息列表容器选择器（可选） */
+  messageList?: string;
 }
 
 /**
