@@ -1,22 +1,22 @@
 /**
- * Gemini 平台适配器
- * 实现 Gemini 平台特定的功能和逻辑
+ * Qwen 中文版（通义千问）平台适配器
+ * 实现通义千问平台特定的功能和逻辑
  */
 
 import { PlatformAdapter } from '@/platforms/base/PlatformAdapter';
-import { GeminiExtractor } from './GeminiExtractor';
+import { QwenCNExtractor } from './QwenCNExtractor';
 import { PlatformType, PlatformConfig } from '@/types/Platform';
 import { Prompt } from '@/types/Prompt';
-import { GEMINI_CONFIG } from '@/config/platforms';
+import { QWEN_CN_CONFIG } from '@/config/platforms';
 import { Logger } from '@/utils/logger';
 
-export class GeminiAdapter extends PlatformAdapter {
-  readonly name = 'Gemini';
-  readonly type = PlatformType.GEMINI;
-  readonly version = '2.0.0';
+export class QwenCNAdapter extends PlatformAdapter {
+  readonly name = 'Qwen (通义千问)';
+  readonly type = PlatformType.QWEN_CN;
+  readonly version = '1.0.0';
 
   /** DOM 提取器 */
-  private extractor: GeminiExtractor;
+  private extractor: QwenCNExtractor;
   /** URL 检查定时器 */
   private urlCheckInterval: ReturnType<typeof setInterval> | null = null;
   /** 最后的 URL */
@@ -24,21 +24,21 @@ export class GeminiAdapter extends PlatformAdapter {
 
   constructor() {
     super();
-    this.extractor = new GeminiExtractor();
+    this.extractor = new QwenCNExtractor();
   }
 
   /**
-   * 检测是否为 Gemini 页面
+   * 检测是否为通义千问页面
    */
   detect(): boolean {
-    return window.location.href.includes('gemini.google.com');
+    return window.location.href.includes('tongyi.com');
   }
 
   /**
    * 获取平台配置
    */
   getConfig(): PlatformConfig {
-    return GEMINI_CONFIG;
+    return QWEN_CN_CONFIG;
   }
 
   /**
@@ -53,7 +53,7 @@ export class GeminiAdapter extends PlatformAdapter {
    * 初始化钩子
    */
   protected override onInitialize(): void {
-    Logger.info('GeminiAdapter', 'Initializing Gemini adapter');
+    Logger.info('QwenCNAdapter', 'Initializing Qwen CN adapter');
 
     // 记录当前 URL
     this.lastUrl = window.location.href;
@@ -61,14 +61,14 @@ export class GeminiAdapter extends PlatformAdapter {
     // 启动 URL 检查（用于检测对话切换）
     this.startURLCheck();
 
-    Logger.info('GeminiAdapter', 'Gemini adapter initialized successfully');
+    Logger.info('QwenCNAdapter', 'Qwen CN adapter initialized successfully');
   }
 
   /**
    * 清理钩子
    */
   protected override onDestroy(): void {
-    Logger.info('GeminiAdapter', 'Destroying Gemini adapter');
+    Logger.info('QwenCNAdapter', 'Destroying Qwen CN adapter');
 
     // 停止 URL 检查
     this.stopURLCheck();
@@ -92,20 +92,17 @@ export class GeminiAdapter extends PlatformAdapter {
       const currentUrl = window.location.href;
 
       if (currentUrl !== this.lastUrl) {
-        Logger.info('GeminiAdapter', 'URL changed, conversation switched');
+        Logger.info('QwenCNAdapter', 'URL changed, conversation switched');
         this.lastUrl = currentUrl;
 
         // 清空缓存（新对话）
         this.extractor.clearCache();
-
-        // 触发 URL 变化事件
-        // EventBus.getInstance().emit(EventType.URL_CHANGED, currentUrl);
       }
     }, interval);
 
     this.addCleanupTask(() => this.stopURLCheck());
 
-    Logger.debug('GeminiAdapter', 'Started URL check');
+    Logger.debug('QwenCNAdapter', 'Started URL check');
   }
 
   /**
@@ -115,7 +112,7 @@ export class GeminiAdapter extends PlatformAdapter {
     if (this.urlCheckInterval) {
       clearInterval(this.urlCheckInterval);
       this.urlCheckInterval = null;
-      Logger.debug('GeminiAdapter', 'Stopped URL check');
+      Logger.debug('QwenCNAdapter', 'Stopped URL check');
     }
   }
 
@@ -139,12 +136,12 @@ export class GeminiAdapter extends PlatformAdapter {
    */
   getCurrentConversationId(): string | null {
     try {
-      // 从 URL 提取对话 ID
-      // 格式: https://gemini.google.com/app/<conversation-id>
-      const match = window.location.pathname.match(/\/app\/([a-f0-9]+)/);
-      return match ? match[1] : null;
+      // 从 URL 提取会话 ID
+      // 格式: https://www.tongyi.com/?sessionId=xxx
+      const url = new URL(window.location.href);
+      return url.searchParams.get('sessionId');
     } catch (error) {
-      Logger.error('GeminiAdapter', 'Failed to get conversation ID', error as Error);
+      Logger.error('QwenCNAdapter', 'Failed to get conversation ID', error as Error);
       return null;
     }
   }
@@ -161,11 +158,11 @@ export class GeminiAdapter extends PlatformAdapter {
    */
   async waitForConversationLoad(timeout = 10000): Promise<boolean> {
     try {
-      await this.waitForElement('.conversation-container', timeout);
-      Logger.info('GeminiAdapter', 'Conversation loaded');
+      await this.waitForElement('.questionItem-MPmrIl', timeout);
+      Logger.info('QwenCNAdapter', 'Conversation loaded');
       return true;
     } catch (error) {
-      Logger.error('GeminiAdapter', 'Conversation load timeout', error as Error);
+      Logger.error('QwenCNAdapter', 'Conversation load timeout', error as Error);
       return false;
     }
   }
