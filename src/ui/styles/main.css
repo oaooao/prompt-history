@@ -133,22 +133,22 @@ main {
   transition: opacity 0.2s ease;
 }
 
-/* 展开状态 - 显示左箭头（收起图标），隐藏右箭头 */
+/* 展开状态 - 显示右箭头（>>），表示点击后向右收起 */
 #prompt-history-sidebar:not(.collapsed) .ph-toggle-icon-expand {
-  display: inline-block;
+  display: none;
 }
 
 #prompt-history-sidebar:not(.collapsed) .ph-toggle-icon-collapse {
-  display: none;
+  display: inline-block;
 }
 
-/* 收起状态 - 显示右箭头（展开图标），隐藏左箭头 */
+/* 收起状态 - 显示左箭头（<<），表示点击后向左展开 */
 #prompt-history-sidebar.collapsed .ph-toggle-icon-expand {
-  display: none;
+  display: inline-block;
 }
 
 #prompt-history-sidebar.collapsed .ph-toggle-icon-collapse {
-  display: inline-block;
+  display: none;
 }
 
 /* ============================================

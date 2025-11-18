@@ -16,7 +16,7 @@ export const CONFIG: Readonly<AppConfig> = {
     minScreenWidth: 1280,
   },
   timing: {
-    scrollDebounce: 300,
+    scrollDebounce: 150,
     extractDelay: 500,
     secondExtractDelay: 1000,
     urlCheckInterval: 500,
@@ -191,9 +191,13 @@ export const API = {
 } as const;
 
 /**
- * 调试模式（开发环境启用）
+ * 调试模式（开发环境启用，或通过 localStorage 手动启用）
+ * 在浏览器控制台执行以启用：localStorage.setItem('prompt-history:debug', 'true')
  */
-export const DEBUG = process.env['NODE_ENV'] === 'development';
+export const DEBUG =
+  process.env['NODE_ENV'] === 'development' ||
+  (typeof localStorage !== 'undefined' &&
+    localStorage.getItem('prompt-history:debug') === 'true');
 
 /**
  * 版本号

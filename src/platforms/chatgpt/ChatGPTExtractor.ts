@@ -77,8 +77,19 @@ export class ChatGPTExtractor extends BaseExtractor {
     // 获取时间戳（尝试从 DOM 获取，否则使用当前时间）
     const timestamp = this.extractTimestamp(article) || Date.now();
 
+    // 查找真正的用户消息元素（而不是整个 article 容器）
+    const messageElement =
+      article.querySelector('.user-message-bubble-color') ||
+      article.querySelector('[data-message-author-role="user"]') ||
+      article; // fallback 到 article
+
     // 创建 Prompt 对象
-    return this.createPrompt(content, article, PromptSource.DOM, timestamp);
+    return this.createPrompt(
+      content,
+      messageElement as HTMLElement,
+      PromptSource.DOM,
+      timestamp
+    );
   }
 
   /**
@@ -214,9 +225,16 @@ export class ChatGPTExtractor extends BaseExtractor {
       }
 
       const timestamp = this.extractTimestamp(article) || Date.now();
+
+      // 查找真正的用户消息元素（而不是整个 article 容器）
+      const messageElement =
+        article.querySelector('.user-message-bubble-color') ||
+        article.querySelector('[data-message-author-role="user"]') ||
+        article; // fallback 到 article
+
       const prompt = this.createPrompt(
         content,
-        article,
+        messageElement as HTMLElement,
         PromptSource.DOM,
         timestamp
       );

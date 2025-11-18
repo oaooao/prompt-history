@@ -374,34 +374,116 @@ export class Sidebar {
   }
 
   /**
+   * 查找真正的滚动容器
+   */
+  private findScrollContainer(): Element | Window {
+    const selectors = [
+      'div.flex.flex-col.overflow-y-auto', // ChatGPT 实际滚动容器
+      '.overflow-y-auto', // 更通用的滚动容器
+      'main', // 通用 fallback
+    ];
+
+    for (const selector of selectors) {
+      const elements = document.querySelectorAll(selector);
+      for (const element of elements) {
+        // 确保元素有实际的可滚动内容
+        if (element.scrollHeight > element.clientHeight + 10) {
+          Logger.debug('Sidebar', `Found scroll container: ${selector}`, {
+            scrollHeight: element.scrollHeight,
+            clientHeight: element.clientHeight,
+            scrollTop: element.scrollTop,
+          });
+          return element;
+        }
+      }
+    }
+
+    Logger.warn('Sidebar', 'No scroll container found, using window');
+    return window;
+  }
+
+  /**
    * 设置滚动监听（自动高亮当前可见的 Prompt）
    */
   private setupScrollListener(): void {
-    const handleScroll = debounce(() => {
-      this.updateActiveByScroll();
-    }, CONFIG.timing.scrollDebounce);
+    // 延迟查找滚动容器，确保 DOM 已完全加载
+    setTimeout(() => {
+      const scrollContainer = this.findScrollContainer();
 
-    window.addEventListener('scroll', handleScroll);
-    document.addEventListener('scroll', handleScroll, true);
+      const handleScroll = debounce(() => {
+        this.updateActiveByScroll(scrollContainer);
+      }, CONFIG.timing.scrollDebounce);
+
+      if (scrollContainer === window) {
+        window.addEventListener('scroll', handleScroll);
+        document.addEventListener('scroll', handleScroll, true);
+      } else {
+        scrollContainer.addEventListener('scroll', handleScroll);
+      }
+
+      Logger.info(
+        'Sidebar',
+        `Scroll listener attached to: ${scrollContainer === window ? 'window' : (scrollContainer as Element).className}`
+      );
+    }, 500); // 延迟 500ms
   }
 
   /**
    * 根据滚动位置更新激活状态
    */
-  private updateActiveByScroll(): void {
+  private updateActiveByScroll(container: Element | Window): void {
     const prompts = this.store.getFiltered();
-    const viewportMiddle = window.innerHeight / 2;
+    if (prompts.length === 0) return;
 
-    for (const prompt of prompts) {
-      if (!prompt.element) {
-        continue;
-      }
+    let targetPrompt: Prompt | null = null;
+    let minDistance = Infinity;
 
-      const rect = prompt.element.getBoundingClientRect();
-      if (rect.top <= viewportMiddle && rect.bottom >= viewportMiddle) {
-        this.setActive(prompt.id);
-        break;
+    if (container === window) {
+      // Window 滚动：找到最接近视口中心的元素
+      const viewportMiddle = window.innerHeight / 2;
+
+      for (const prompt of prompts) {
+        if (!prompt.element) continue;
+
+        const rect = prompt.element.getBoundingClientRect();
+        const elementMiddle = rect.top + rect.height / 2;
+        const distance = Math.abs(elementMiddle - viewportMiddle);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          targetPrompt = prompt;
+        }
       }
+    } else {
+      // 容器滚动：找到在容器可见区域中最接近中心的元素
+      const containerRect = (container as Element).getBoundingClientRect();
+      const containerMiddle = containerRect.top + containerRect.height / 2;
+
+      for (const prompt of prompts) {
+        if (!prompt.element) continue;
+
+        const rect = prompt.element.getBoundingClientRect();
+
+        // 检查元素是否在容器的可见区域内
+        const isInView =
+          rect.bottom >= containerRect.top && rect.top <= containerRect.bottom;
+
+        if (!isInView) continue;
+
+        const elementMiddle = rect.top + rect.height / 2;
+        const distance = Math.abs(elementMiddle - containerMiddle);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          targetPrompt = prompt;
+        }
+      }
+    }
+
+    // 设置激活状态
+    if (targetPrompt) {
+      this.setActive(targetPrompt.id);
+      Logger.debug('Sidebar', `Active prompt updated: ${targetPrompt.id}`);
     }
   }
 
