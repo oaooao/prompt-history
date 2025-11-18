@@ -15,7 +15,13 @@
       "WebFetch(domain:voidzero.dev)",
       "WebFetch(domain:devblogs.microsoft.com)",
       "WebFetch(domain:www.npmjs.com)",
-      "WebFetch(domain:marketplace.visualstudio.com)"
+      "WebFetch(domain:marketplace.visualstudio.com)",
+      "Bash(cat:*)",
+      "Bash(bun run build:*)",
+      "WebFetch(domain:shadcn-svelte.com)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "WebFetch(domain:svelte.dev)"
     ],
     "deny": [],
     "ask": []

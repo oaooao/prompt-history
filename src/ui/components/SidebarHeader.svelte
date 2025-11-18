@@ -27,7 +27,6 @@
     <div class={SELECTORS.HEADER_ACTIONS}>
       <button
         class="{SELECTORS.COPY_ALL_BUTTON} {isCopied ? 'copied' : ''}"
-        title="复制所有"
         onclick={handleCopyAll}
       >
         {#if isCopied}
@@ -38,7 +37,6 @@
       </button>
       <button
         class={SELECTORS.TOGGLE_BUTTON}
-        title="展开/收起"
         onclick={handleToggle}
       >
         <span class="ph-toggle-icon ph-toggle-icon-collapse"

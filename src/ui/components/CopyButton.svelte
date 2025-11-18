@@ -25,7 +25,6 @@
 <button
   class="ph-copy-button {isCopied ? 'copied' : ''}"
   data-id={promptId}
-  title="复制"
   onclick={handleCopy}
 >
   {#if isCopied}
@@ -49,13 +48,13 @@
     cursor: pointer;
     transition: all 0.15s ease;
     border-radius: 3px;
-    opacity: 0;
+    visibility: hidden;
     flex-shrink: 0;
   }
 
   /* 父元素悬停时显示按钮 */
   :global(.ph-link-item:hover) .ph-copy-button {
-    opacity: 1;
+    visibility: visible;
   }
 
   .ph-copy-button:hover {
