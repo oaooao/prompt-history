@@ -26,6 +26,11 @@ export class ChatGPTExtractor extends BaseExtractor {
       const prompts: Prompt[] = [];
 
       for (const article of articles) {
+        // 使用新方法过滤用户消息
+        if (!this.isUserPrompt(article)) {
+          continue;
+        }
+
         const prompt = this.extractFromArticle(article);
         if (prompt) {
           prompts.push(prompt);
@@ -53,13 +58,9 @@ export class ChatGPTExtractor extends BaseExtractor {
 
   /**
    * 从单个文章元素提取 Prompt
+   * 注意：调用方已通过 isUserPrompt() 过滤，此处不再重复检查
    */
   private extractFromArticle(article: HTMLElement): Prompt | null {
-    // 检查是否为用户消息
-    if (!this.isUserMessage(article)) {
-      return null;
-    }
-
     // 提取文本内容
     const content = this.extractText(article);
 
@@ -109,6 +110,46 @@ export class ChatGPTExtractor extends BaseExtractor {
   }
 
   /**
+   * 判断 article 元素是否为用户 Prompt（ChatGPT 专用）
+   * 优先级：article data-turn > 内部 data-message-author-role > CSS 类 > 文本兜底
+   */
+  private isUserPrompt(article: Element): boolean {
+    // 优先级 1: 检查 article 的 data-turn 属性（最可靠）
+    const dataTurn = article.getAttribute('data-turn');
+    if (dataTurn === 'user') {
+      return true;
+    }
+
+    // 优先级 2: 检查内部的 data-message-author-role 属性
+    const messageDiv = article.querySelector('[data-message-author-role="user"]');
+    if (messageDiv) {
+      return true;
+    }
+
+    // 优先级 3: 检查 CSS 类名
+    if (article.querySelector('.user-message-bubble-color')) {
+      return true;
+    }
+
+    // 优先级 4: 文本兜底（支持多语言）
+    const heading = article.querySelector('h5, h6');
+    if (heading) {
+      const headingText = heading.textContent || '';
+      for (const keyword of this.config.selectors.userMessages) {
+        if (headingText.includes(keyword)) {
+          Logger.debug(
+            'ChatGPTExtractor',
+            `⚠️ Using text fallback detection: "${keyword}"`
+          );
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * 检查是否为用户消息（重写父类方法以适配 ChatGPT）
    */
   protected override isUserMessage(element: Element): boolean {
@@ -145,7 +186,7 @@ export class ChatGPTExtractor extends BaseExtractor {
    */
   hasNewMessages(): boolean {
     const articles = this.findArticles();
-    const currentCount = articles.filter((a) => this.isUserMessage(a)).length;
+    const currentCount = articles.filter((a) => this.isUserPrompt(a)).length;
     const cachedCount = this.getCachedPrompts().length;
 
     return currentCount > cachedCount;
@@ -159,7 +200,8 @@ export class ChatGPTExtractor extends BaseExtractor {
     const newPrompts: Prompt[] = [];
 
     for (const article of articles) {
-      if (!this.isUserMessage(article)) {
+      // 使用新方法过滤用户消息
+      if (!this.isUserPrompt(article)) {
         continue;
       }
 
