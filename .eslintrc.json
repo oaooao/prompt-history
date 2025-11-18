@@ -39,6 +39,7 @@
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "prefer-const": "error",
     "no-var": "error",
+    "no-case-declarations": "off",
     "eqeqeq": ["error", "always"],
     "curly": ["error", "all"],
     "prettier/prettier": "warn"

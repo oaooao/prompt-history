@@ -17,9 +17,7 @@ export class PlatformFactory {
   /**
    * 创建平台适配器
    */
-  static async create(
-    platformType?: PlatformType
-  ): Promise<IPlatformAdapter> {
+  static async create(platformType?: PlatformType): Promise<IPlatformAdapter> {
     // 如果已经创建过实例且平台类型相同，直接返回
     if (
       this.instance &&
@@ -30,10 +28,12 @@ export class PlatformFactory {
     }
 
     // 检测平台类型
-    const detectedType =
-      platformType || PlatformDetector.getCurrentPlatform();
+    const detectedType = platformType || PlatformDetector.getCurrentPlatform();
 
-    Logger.info('PlatformFactory', `Creating adapter for platform: ${detectedType}`);
+    Logger.info(
+      'PlatformFactory',
+      `Creating adapter for platform: ${detectedType}`
+    );
 
     // 根据平台类型动态导入对应的适配器
     let adapter: IPlatformAdapter;
@@ -56,7 +56,9 @@ export class PlatformFactory {
           break;
 
         case PlatformType.DEEPSEEK:
-          const { DeepSeekAdapter } = await import('./deepseek/DeepSeekAdapter');
+          const { DeepSeekAdapter } = await import(
+            './deepseek/DeepSeekAdapter'
+          );
           adapter = new DeepSeekAdapter();
           break;
 
@@ -69,7 +71,10 @@ export class PlatformFactory {
       this.instance = adapter;
       this.currentPlatform = detectedType;
 
-      Logger.info('PlatformFactory', `Created ${adapter.name} adapter successfully`);
+      Logger.info(
+        'PlatformFactory',
+        `Created ${adapter.name} adapter successfully`
+      );
       return adapter;
     } catch (error) {
       Logger.error(

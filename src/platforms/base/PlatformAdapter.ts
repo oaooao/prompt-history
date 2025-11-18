@@ -87,7 +87,11 @@ export abstract class PlatformAdapter implements IPlatformAdapter {
         try {
           task();
         } catch (error) {
-          Logger.error('PlatformAdapter', 'Cleanup task failed', error as Error);
+          Logger.error(
+            'PlatformAdapter',
+            'Cleanup task failed',
+            error as Error
+          );
         }
       });
       this.cleanupTasks = [];
@@ -121,7 +125,11 @@ export abstract class PlatformAdapter implements IPlatformAdapter {
       try {
         callback();
       } catch (error) {
-        Logger.error('PlatformAdapter', 'Observer callback failed', error as Error);
+        Logger.error(
+          'PlatformAdapter',
+          'Observer callback failed',
+          error as Error
+        );
       }
     });
 
@@ -134,7 +142,10 @@ export abstract class PlatformAdapter implements IPlatformAdapter {
       characterData: false,
     });
 
-    Logger.info('PlatformAdapter', `Started observing DOM changes for ${this.name}`);
+    Logger.info(
+      'PlatformAdapter',
+      `Started observing DOM changes for ${this.name}`
+    );
 
     // 添加到清理任务
     this.addCleanupTask(() => this.stopObserving());
@@ -147,7 +158,10 @@ export abstract class PlatformAdapter implements IPlatformAdapter {
     if (this.observer) {
       this.observer.disconnect();
       this.observer = null;
-      Logger.info('PlatformAdapter', `Stopped observing DOM changes for ${this.name}`);
+      Logger.info(
+        'PlatformAdapter',
+        `Stopped observing DOM changes for ${this.name}`
+      );
     }
   }
 

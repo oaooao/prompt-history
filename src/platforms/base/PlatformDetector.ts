@@ -3,10 +3,7 @@
  * 自动识别当前页面所属的 AI 聊天平台
  */
 
-import {
-  PlatformType,
-  PlatformDetectionResult,
-} from '@/types/Platform';
+import { PlatformType, PlatformDetectionResult } from '@/types/Platform';
 import { PLATFORM_FEATURES } from '@/config/platforms';
 import { Logger } from '@/utils/logger';
 
@@ -20,23 +17,34 @@ export class PlatformDetector {
     // 1. 优先通过 URL 检测（最快最准确）
     const urlResult = this.detectByURL();
     if (urlResult.detected && urlResult.confidence >= 0.9) {
-      Logger.info('PlatformDetector', `Detected platform by URL: ${urlResult.platform}`);
+      Logger.info(
+        'PlatformDetector',
+        `Detected platform by URL: ${urlResult.platform}`
+      );
       return urlResult;
     }
 
     // 2. 通过 DOM 特征检测
     const domResult = this.detectByDOM();
     if (domResult.detected && domResult.confidence >= 0.7) {
-      Logger.info('PlatformDetector', `Detected platform by DOM: ${domResult.platform}`);
+      Logger.info(
+        'PlatformDetector',
+        `Detected platform by DOM: ${domResult.platform}`
+      );
       return domResult;
     }
 
     // 3. 混合检测（URL + DOM）
     if (urlResult.detected || domResult.detected) {
       const confidence = (urlResult.confidence + domResult.confidence) / 2;
-      const platform = urlResult.detected ? urlResult.platform : domResult.platform;
+      const platform = urlResult.detected
+        ? urlResult.platform
+        : domResult.platform;
 
-      Logger.info('PlatformDetector', `Detected platform by hybrid: ${platform}`);
+      Logger.info(
+        'PlatformDetector',
+        `Detected platform by hybrid: ${platform}`
+      );
       return {
         platform,
         detected: true,
@@ -107,6 +115,7 @@ export class PlatformDetector {
       if (features.windowFeatures && features.windowFeatures.length > 0) {
         totalFeatures += features.windowFeatures.length;
         for (const feature of features.windowFeatures) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
           if ((window as any)[feature]) {
             score++;
           }

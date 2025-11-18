@@ -87,7 +87,8 @@ export class ChatGPTExtractor extends BaseExtractor {
   private extractTimestamp(article: HTMLElement): number | null {
     try {
       // 尝试从 data 属性获取
-      const dataTime = article.dataset['timestamp'] || article.dataset['messageTime'];
+      const dataTime =
+        article.dataset['timestamp'] || article.dataset['messageTime'];
       if (dataTime) {
         return parseInt(dataTime, 10);
       }
@@ -121,7 +122,9 @@ export class ChatGPTExtractor extends BaseExtractor {
     }
 
     // 优先级 2: 检查内部的 data-message-author-role 属性
-    const messageDiv = article.querySelector('[data-message-author-role="user"]');
+    const messageDiv = article.querySelector(
+      '[data-message-author-role="user"]'
+    );
     if (messageDiv) {
       return true;
     }

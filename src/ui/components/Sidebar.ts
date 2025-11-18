@@ -144,9 +144,11 @@ export class Sidebar {
     }
 
     // 复制所有按钮
-    const copyAllBtn = this.container.querySelector(`.${SELECTORS.COPY_ALL_BUTTON}`);
+    const copyAllBtn = this.container.querySelector(
+      `.${SELECTORS.COPY_ALL_BUTTON}`
+    );
     if (copyAllBtn) {
-      copyAllBtn.addEventListener('click', () => this.handleCopyAll());
+      copyAllBtn.addEventListener('click', () => void this.handleCopyAll());
     }
 
     // Prompt 项点击（跳转）
@@ -171,7 +173,7 @@ export class Sidebar {
         e.stopPropagation();
         const id = copyBtn.getAttribute('data-id');
         if (id) {
-          this.handleCopy(id, copyBtn as HTMLElement);
+          void this.handleCopy(id, copyBtn as HTMLElement);
         }
       }
     });
@@ -233,7 +235,9 @@ export class Sidebar {
       });
 
       // 显示反馈
-      const button = this.container?.querySelector(`.${SELECTORS.COPY_ALL_BUTTON}`);
+      const button = this.container?.querySelector(
+        `.${SELECTORS.COPY_ALL_BUTTON}`
+      );
       if (button) {
         this.showCopyFeedback(button as HTMLElement);
       }

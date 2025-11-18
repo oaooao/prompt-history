@@ -222,6 +222,11 @@ main {
   color: #0070f3;
 }
 
+/* hover 状态时序号也高亮 */
+.ph-link-item:hover .prompt-index {
+  color: #0070f3;
+}
+
 /* 滚动条 - 隐藏 */
 #prompt-history-sidebar::-webkit-scrollbar {
   display: none;
@@ -315,6 +320,11 @@ main {
 
   /* 激活状态时序号也高亮（暗色模式） */
   .ph-link-item.active .prompt-index {
+    color: #3b9eff;
+  }
+
+  /* hover 状态时序号也高亮（暗色模式） */
+  .ph-link-item:hover .prompt-index {
     color: #3b9eff;
   }
 }
