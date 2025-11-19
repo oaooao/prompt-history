@@ -21,7 +21,8 @@
       "WebFetch(domain:shadcn-svelte.com)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "WebFetch(domain:svelte.dev)"
+      "WebFetch(domain:svelte.dev)",
+      "Bash(git worktree:*)"
     ],
     "deny": [],
     "ask": []
