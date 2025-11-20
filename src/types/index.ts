@@ -6,3 +6,4 @@ export * from './Prompt';
 export * from './Events';
 export * from './Config';
 export * from './Platform';
+export * from './Extraction';

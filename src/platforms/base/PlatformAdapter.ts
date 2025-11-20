@@ -116,7 +116,10 @@ export abstract class PlatformAdapter implements IPlatformAdapter {
   /**
    * 监听 DOM 变化
    */
-  observeChanges(callback: () => void): void {
+  observeChanges(
+    callback: () => void,
+    _options?: { forceInitial?: boolean }
+  ): void {
     if (this.observer) {
       this.stopObserving();
     }

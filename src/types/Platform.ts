@@ -136,7 +136,13 @@ export interface IPlatformAdapter {
   /**
    * 监听 DOM 变化
    */
-  observeChanges(callback: () => void): void;
+  observeChanges(
+    callback: () => void,
+    options?: {
+      /** 是否强制从初始容器开始监听（忽略当前 article 状态） */
+      forceInitial?: boolean;
+    }
+  ): void;
 
   /**
    * 停止监听

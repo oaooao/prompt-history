@@ -32,11 +32,14 @@ export abstract class BaseExtractor {
 
   /**
    * 生成 Prompt ID
+   * @param content - Prompt 内容
+   * @param domIndex - DOM 遍历位置索引（用于区分相同内容的不同 prompt）
+   * @param timestamp - 时间戳（可选）
    */
-  protected generatePromptId(content: string, timestamp?: number): string {
+  protected generatePromptId(content: string, domIndex: number, timestamp?: number): string {
     const time = timestamp || Date.now();
     const hash = this.simpleHash(content);
-    return `prompt_${time}_${hash}`;
+    return `prompt_${time}_${hash}_${domIndex}`;
   }
 
   /**
@@ -92,9 +95,10 @@ export abstract class BaseExtractor {
     content: string,
     element: HTMLElement | null,
     source: PromptSource,
+    domIndex: number,
     timestamp?: number
   ): Prompt {
-    const id = this.generatePromptId(content, timestamp);
+    const id = this.generatePromptId(content, domIndex, timestamp);
     return {
       id,
       content: content.trim(),
