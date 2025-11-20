@@ -24,12 +24,14 @@ export class QwenCNExtractor extends BaseExtractor {
       Logger.debug('QwenCNExtractor', `Found ${questionItems.length} question items`);
 
       const prompts: Prompt[] = [];
+      let domIndex = 0;
 
       for (const item of questionItems) {
-        const prompt = this.extractFromQuestionItem(item);
+        const prompt = this.extractFromQuestionItem(item, domIndex);
         if (prompt) {
           prompts.push(prompt);
           this.cachePrompt(prompt);
+          domIndex++;
         }
       }
 
@@ -53,8 +55,10 @@ export class QwenCNExtractor extends BaseExtractor {
 
   /**
    * 从提问项中提取内容
+   * @param item - 提问项元素
+   * @param domIndex - DOM 遍历位置索引
    */
-  private extractFromQuestionItem(item: HTMLElement): Prompt | null {
+  private extractFromQuestionItem(item: HTMLElement, domIndex: number): Prompt | null {
     const { userBubble } = this.config.selectors;
 
     if (!userBubble) {
@@ -91,6 +95,7 @@ export class QwenCNExtractor extends BaseExtractor {
       content,
       bubble as HTMLElement,
       PromptSource.DOM,
+      domIndex,
       timestamp
     );
   }
@@ -101,6 +106,7 @@ export class QwenCNExtractor extends BaseExtractor {
   async extractNew(): Promise<Prompt[]> {
     const questionItems = this.findQuestionItems();
     const newPrompts: Prompt[] = [];
+    let domIndex = 0;
 
     for (const item of questionItems) {
       const { userBubble } = this.config.selectors;
@@ -124,11 +130,13 @@ export class QwenCNExtractor extends BaseExtractor {
         content,
         bubble as HTMLElement,
         PromptSource.DOM,
+        domIndex,
         timestamp
       );
 
       newPrompts.push(prompt);
       this.cachePrompt(prompt);
+      domIndex++;
     }
 
     Logger.info('QwenCNExtractor', `Extracted ${newPrompts.length} new prompts`);

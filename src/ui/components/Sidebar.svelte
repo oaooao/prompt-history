@@ -6,7 +6,7 @@
   import { EventType } from '@/types/Events';
   import { sidebarState } from '@/ui/stores/sidebar.svelte';
   import { SELECTORS, CONFIG } from '@/config/constants';
-  import { debounce } from '@/utils/debounce';
+  import { cancelableDebounce } from '@/utils/debounce';
   import { Logger } from '@/utils/logger';
   import SidebarHeader from './SidebarHeader.svelte';
   import PromptList from './PromptList.svelte';
@@ -17,29 +17,42 @@
     eventBus: EventBus;
   }>();
 
+  // 组件销毁标志，用于防止竞态条件
+  let isDestroying = false;
+
   onMount(() => {
-    // 订阅 Prompts 更新事件
-    const unsubscribe = eventBus.on(EventType.PROMPTS_UPDATED, (prompts: Prompt[]) => {
+    // 订阅 Prompts 更新事件，记录监听器 ID 以便销毁时解绑
+    const listenerId = eventBus.on(EventType.PROMPTS_UPDATED, (prompts: Prompt[]) => {
       sidebarState.updatePrompts(prompts);
     });
 
-    // 初始化数据
+    // 获取初始数据
     const initialPrompts = store.getFiltered();
     sidebarState.updatePrompts(initialPrompts);
 
     // 更新主内容区 margin
     updateMainMargin();
 
-    // 设置滚动监听
-    setupScrollListener();
+    // 设置滚动监听，保存清理函数
+    const cleanupScroll = setupScrollListener();
 
+    // 返回清理函数
     return () => {
-      unsubscribe();
+      // 设置销毁标志，防止回调继续执行
+      isDestroying = true;
+
+      if (listenerId) {
+        eventBus.off(listenerId);
+      }
+      cleanupScroll(); // 清理滚动监听器
+
       // 清理 margin
       const main = document.querySelector('main');
       if (main) {
         main.style.marginRight = '';
       }
+
+      Logger.debug('Sidebar', 'Component cleanup completed');
     };
   });
 
@@ -87,6 +100,21 @@
    * 根据滚动位置更新激活状态
    */
   function updateActiveByScroll(container: Element | Window): void {
+    // 防御性检查：组件是否正在销毁
+    if (isDestroying) {
+      return;
+    }
+
+    // 防御性检查：确保有数据
+    if (sidebarState.promptCount === 0) {
+      return;
+    }
+
+    // 防御性检查：确保 store 仍然可用
+    if (!store || typeof store.getFiltered !== 'function') {
+      return;
+    }
+
     const prompts = store.getFiltered();
     if (prompts.length === 0) return;
 
@@ -144,21 +172,43 @@
 
   /**
    * 设置滚动监听（自动高亮当前可见的 Prompt）
+   * @returns 清理函数
    */
-  function setupScrollListener(): void {
+  function setupScrollListener(): () => void {
+    let cleanupFn: (() => void) | null = null;
+
     // 延迟查找滚动容器，确保 DOM 已完全加载
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       const scrollContainer = findScrollContainer();
 
-      const handleScroll = debounce(() => {
-        updateActiveByScroll(scrollContainer);
-      }, CONFIG.timing.scrollDebounce);
+      // 使用可取消的 debounce
+      const { debounced: handleScroll, cancel: cancelDebounce } = cancelableDebounce(
+        () => {
+          updateActiveByScroll(scrollContainer);
+        },
+        CONFIG.timing.scrollDebounce
+      );
 
       if (scrollContainer === window) {
         window.addEventListener('scroll', handleScroll);
         document.addEventListener('scroll', handleScroll, true);
+
+        // 保存清理函数
+        cleanupFn = () => {
+          cancelDebounce(); // 取消待执行的 debounce 回调
+          window.removeEventListener('scroll', handleScroll);
+          document.removeEventListener('scroll', handleScroll, true);
+          Logger.debug('Sidebar', 'Window scroll listeners removed and debounce cancelled');
+        };
       } else {
         scrollContainer.addEventListener('scroll', handleScroll);
+
+        // 保存清理函数
+        cleanupFn = () => {
+          cancelDebounce(); // 取消待执行的 debounce 回调
+          scrollContainer.removeEventListener('scroll', handleScroll);
+          Logger.debug('Sidebar', 'Container scroll listener removed and debounce cancelled');
+        };
       }
 
       Logger.info(
@@ -166,6 +216,14 @@
         `Scroll listener attached to: ${scrollContainer === window ? 'window' : (scrollContainer as Element).className}`
       );
     }, 500); // 延迟 500ms
+
+    // 返回清理函数（处理超时情况）
+    return () => {
+      clearTimeout(timeoutId);
+      if (cleanupFn) {
+        cleanupFn();
+      }
+    };
   }
 
   // 监听折叠状态变化，更新 margin
@@ -174,20 +232,25 @@
     // eslint-disable-next-line no-unused-expressions -- Svelte 5 $effect dependency tracking
     sidebarState.isCollapsed;
     updateMainMargin();
+
+    // 返回空的清理函数，确保 Svelte 不会误解返回值
+    return () => {};
   });
 </script>
 
-<div
-  id={SELECTORS.SIDEBAR}
-  class={`${SELECTORS.NAV_CONTAINER} ${sidebarState.isCollapsed ? SELECTORS.COLLAPSED : ''}`}
->
-  <div class={SELECTORS.NAV_CONTAINER}>
-    <SidebarHeader />
-    <PromptList />
+{#if sidebarState.promptCount > 0}
+  <div
+    id={SELECTORS.SIDEBAR}
+    class={`${SELECTORS.NAV_CONTAINER} ${sidebarState.isCollapsed ? SELECTORS.COLLAPSED : ''}`}
+  >
+    <div class={SELECTORS.NAV_CONTAINER}>
+      <SidebarHeader />
+      <PromptList />
+    </div>
   </div>
-</div>
 
-<CompactCard />
+  <CompactCard />
+{/if}
 
 <style>
   /* 侧边栏容器 */
@@ -204,6 +267,16 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, sans-serif;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 淡入动画 */
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  /* 淡入关键帧 */
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
   }
 
   /* 折叠状态 */

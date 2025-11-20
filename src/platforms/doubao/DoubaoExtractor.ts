@@ -28,12 +28,14 @@ export class DoubaoExtractor extends BaseExtractor {
       Logger.debug('DoubaoExtractor', `Found ${userMessages.length} user messages`);
 
       const prompts: Prompt[] = [];
+      let domIndex = 0;
 
       for (const msgElement of userMessages) {
-        const prompt = this.extractFromMessage(msgElement);
+        const prompt = this.extractFromMessage(msgElement, domIndex);
         if (prompt) {
           prompts.push(prompt);
           this.cachePrompt(prompt);
+          domIndex++;
         }
       }
 
@@ -72,8 +74,10 @@ export class DoubaoExtractor extends BaseExtractor {
 
   /**
    * 从用户消息容器提取内容
+   * @param msgElement - 消息容器元素
+   * @param domIndex - DOM 遍历位置索引
    */
-  private extractFromMessage(msgElement: HTMLElement): Prompt | null {
+  private extractFromMessage(msgElement: HTMLElement, domIndex: number): Prompt | null {
     // 提取消息 ID（用于生成唯一标识）
     const messageId = msgElement.getAttribute('data-message-id');
 
@@ -102,6 +106,7 @@ export class DoubaoExtractor extends BaseExtractor {
       content,
       msgElement,
       PromptSource.DOM,
+      domIndex,
       timestamp
     );
   }
@@ -113,6 +118,7 @@ export class DoubaoExtractor extends BaseExtractor {
     const allMessages = this.findAllMessages();
     const userMessages = this.filterUserMessages(allMessages);
     const newPrompts: Prompt[] = [];
+    let domIndex = 0;
 
     for (const msgElement of userMessages) {
       const content = this.extractText(msgElement);
@@ -125,11 +131,13 @@ export class DoubaoExtractor extends BaseExtractor {
         content,
         msgElement,
         PromptSource.DOM,
+        domIndex,
         timestamp
       );
 
       newPrompts.push(prompt);
       this.cachePrompt(prompt);
+      domIndex++;
     }
 
     Logger.info('DoubaoExtractor', `Extracted ${newPrompts.length} new prompts`);

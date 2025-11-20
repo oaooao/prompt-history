@@ -24,12 +24,14 @@ export class DeepSeekExtractor extends BaseExtractor {
       Logger.debug('DeepSeekExtractor', `Found ${userMessages.length} user messages`);
 
       const prompts: Prompt[] = [];
+      let domIndex = 0;
 
       for (const msgElement of userMessages) {
-        const prompt = this.extractFromMessage(msgElement);
+        const prompt = this.extractFromMessage(msgElement, domIndex);
         if (prompt) {
           prompts.push(prompt);
           this.cachePrompt(prompt);
+          domIndex++;
         }
       }
 
@@ -54,8 +56,10 @@ export class DeepSeekExtractor extends BaseExtractor {
 
   /**
    * 从用户消息元素提取内容
+   * @param msgElement - 消息容器元素
+   * @param domIndex - DOM 遍历位置索引
    */
-  private extractFromMessage(msgElement: HTMLElement): Prompt | null {
+  private extractFromMessage(msgElement: HTMLElement, domIndex: number): Prompt | null {
     const { userMessageText } = this.config.selectors;
 
     if (!userMessageText) {
@@ -92,6 +96,7 @@ export class DeepSeekExtractor extends BaseExtractor {
       content,
       textContainer as HTMLElement,
       PromptSource.DOM,
+      domIndex,
       timestamp
     );
   }
@@ -130,6 +135,7 @@ export class DeepSeekExtractor extends BaseExtractor {
   async extractNew(): Promise<Prompt[]> {
     const userMessages = this.findUserMessages();
     const newPrompts: Prompt[] = [];
+    let domIndex = 0;
 
     for (const msgElement of userMessages) {
       const { userMessageText } = this.config.selectors;
@@ -153,11 +159,13 @@ export class DeepSeekExtractor extends BaseExtractor {
         content,
         textContainer as HTMLElement,
         PromptSource.DOM,
+        domIndex,
         timestamp
       );
 
       newPrompts.push(prompt);
       this.cachePrompt(prompt);
+      domIndex++;
     }
 
     Logger.info('DeepSeekExtractor', `Extracted ${newPrompts.length} new prompts`);

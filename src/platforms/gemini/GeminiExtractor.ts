@@ -24,12 +24,14 @@ export class GeminiExtractor extends BaseExtractor {
       Logger.debug('GeminiExtractor', `Found ${containers.length} conversation containers`);
 
       const prompts: Prompt[] = [];
+      let domIndex = 0; // DOM 位置索引计数器
 
       for (const container of containers) {
-        const prompt = this.extractFromContainer(container);
+        const prompt = this.extractFromContainer(container, domIndex);
         if (prompt) {
           prompts.push(prompt);
           this.cachePrompt(prompt);
+          domIndex++; // 只有成功提取后才增加索引
         }
       }
 
@@ -53,8 +55,10 @@ export class GeminiExtractor extends BaseExtractor {
 
   /**
    * 从对话容器提取用户消息
+   * @param container - 对话容器元素
+   * @param domIndex - DOM 遍历位置索引
    */
-  private extractFromContainer(container: HTMLElement): Prompt | null {
+  private extractFromContainer(container: HTMLElement, domIndex: number): Prompt | null {
     const { userQueryElement, userQueryText } = this.config.selectors;
 
     if (!userQueryElement || !userQueryText) {
@@ -91,11 +95,12 @@ export class GeminiExtractor extends BaseExtractor {
     // 获取时间戳
     const timestamp = this.extractTimestamp(container) || Date.now();
 
-    // 创建 Prompt 对象
+    // 创建 Prompt 对象（传入 domIndex 以确保唯一性）
     return this.createPrompt(
       content,
       userQuery as HTMLElement,
       PromptSource.DOM,
+      domIndex,
       timestamp
     );
   }
@@ -175,6 +180,8 @@ export class GeminiExtractor extends BaseExtractor {
       return [];
     }
 
+    let domIndex = 0; // DOM 位置索引计数器
+
     for (const container of containers) {
       const userQuery = container.querySelector(
         `${userQueryElement} ${userQueryText}`
@@ -195,11 +202,13 @@ export class GeminiExtractor extends BaseExtractor {
         content,
         userQuery as HTMLElement,
         PromptSource.DOM,
+        domIndex,
         timestamp
       );
 
       newPrompts.push(prompt);
       this.cachePrompt(prompt);
+      domIndex++; // 只有成功提取后才增加索引
     }
 
     Logger.info('GeminiExtractor', `Extracted ${newPrompts.length} new prompts`);

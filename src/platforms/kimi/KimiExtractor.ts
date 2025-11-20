@@ -24,12 +24,14 @@ export class KimiExtractor extends BaseExtractor {
       Logger.debug('KimiExtractor', `Found ${userSegments.length} user segments`);
 
       const prompts: Prompt[] = [];
+      let domIndex = 0;
 
       for (const segment of userSegments) {
-        const prompt = this.extractFromSegment(segment);
+        const prompt = this.extractFromSegment(segment, domIndex);
         if (prompt) {
           prompts.push(prompt);
           this.cachePrompt(prompt);
+          domIndex++;
         }
       }
 
@@ -53,8 +55,10 @@ export class KimiExtractor extends BaseExtractor {
 
   /**
    * 从用户消息片段提取内容
+   * @param segment - 消息片段元素
+   * @param domIndex - DOM 遍历位置索引
    */
-  private extractFromSegment(segment: HTMLElement): Prompt | null {
+  private extractFromSegment(segment: HTMLElement, domIndex: number): Prompt | null {
     const { userBubble } = this.config.selectors;
 
     if (!userBubble) {
@@ -91,6 +95,7 @@ export class KimiExtractor extends BaseExtractor {
       content,
       contentBox as HTMLElement,
       PromptSource.DOM,
+      domIndex,
       timestamp
     );
   }
@@ -101,6 +106,7 @@ export class KimiExtractor extends BaseExtractor {
   async extractNew(): Promise<Prompt[]> {
     const userSegments = this.findUserSegments();
     const newPrompts: Prompt[] = [];
+    let domIndex = 0;
 
     for (const segment of userSegments) {
       const { userBubble } = this.config.selectors;
@@ -124,11 +130,13 @@ export class KimiExtractor extends BaseExtractor {
         content,
         contentBox as HTMLElement,
         PromptSource.DOM,
+        domIndex,
         timestamp
       );
 
       newPrompts.push(prompt);
       this.cachePrompt(prompt);
+      domIndex++;
     }
 
     Logger.info('KimiExtractor', `Extracted ${newPrompts.length} new prompts`);
